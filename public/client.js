@@ -6,6 +6,8 @@ let answered = false;
 
 let thinkingMusic = null;
 
+let selectedButton = null;
+
 const menuMusic =
   new Audio("MainMenu.mp3");
 
@@ -27,6 +29,11 @@ function stopThinkingMusic() {
 
     thinkingMusic = null;
   }
+}
+
+function shuffle(array) {
+
+  return array.sort(() => Math.random() - 0.5);
 }
 
 function findGame() {
@@ -84,15 +91,24 @@ function nextQuestion(q) {
 
   answered = false;
 
+  selectedButton = null;
+
   stopThinkingMusic();
 
   document.getElementById("question")
     .innerText = q.q;
 
+  document.getElementById("questionNumber")
+    .innerText =
+      `Вопрос ${q.number} / ${q.total}`;
+
   document.getElementById("answers")
     .innerHTML = "";
 
   document.getElementById("result")
+    .innerHTML = "";
+
+  document.getElementById("waitingText")
     .innerHTML = "";
 
   setTimeout(() => {
@@ -109,9 +125,18 @@ function nextQuestion(q) {
     thinkingMusic.volume = 0.7;
 
     thinkingMusic.play()
-      .catch(() => {});
+      .catch(() => {
 
-    q.a.forEach((answer, index) => {
+        console.log(
+          "Ошибка воспроизведения:",
+          track
+        );
+      });
+
+    const answers =
+      shuffle([...q.a]);
+
+    answers.forEach((answer) => {
 
       const btn =
         document.createElement("button");
@@ -126,21 +151,34 @@ function nextQuestion(q) {
 
         answered = true;
 
-        socket.emit("answer", {
+        selectedButton = btn;
 
-          room: currentRoom,
-
-          answer: index,
-
-          time: Date.now()
-        });
+        btn.classList.add("selectedAnswer");
 
         document
           .querySelectorAll(".answerBtn")
           .forEach(b => {
 
-            b.disabled = true;
+            if (b !== btn) {
+
+              b.disabled = true;
+            }
           });
+
+        document
+          .getElementById("waitingText")
+          .innerText =
+            "Ждём ответа соперника...";
+
+        socket.emit("answer", {
+
+          room: currentRoom,
+
+          answer:
+            q.a.indexOf(answer),
+
+          time: Date.now()
+        });
       };
 
       document
@@ -159,6 +197,10 @@ socket.on("question", (q) => {
 socket.on("result", (data) => {
 
   stopThinkingMusic();
+
+  document.getElementById(
+    "waitingText"
+  ).innerHTML = "";
 
   const myResult =
     data.results[socket.id];
@@ -179,6 +221,19 @@ socket.on("result", (data) => {
   document.getElementById("player2")
     .innerText =
       `${data.players[1].nick}: ${data.players[1].score}`;
+
+  let pointsText = "";
+
+  if (myResult.points > 0) {
+
+    pointsText =
+      `+${myResult.points} очков`;
+
+  } else {
+
+    pointsText =
+      `${myResult.points} очков`;
+  }
 
   document.getElementById("result")
     .innerHTML = `
@@ -202,6 +257,11 @@ socket.on("result", (data) => {
         ? "Вы ответили быстрее"
         : "Вы ответили позже"
       }
+
+      <br><br>
+
+      Получено:
+      ${pointsText}
     `;
 });
 
