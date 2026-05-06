@@ -41,11 +41,11 @@ socket.on("startGame", (data) => {
   document.getElementById("menu").style.display = "none";
   document.getElementById("game").style.display = "block";
 
-  document.getElementById("player1").innerText =
-    `${data.players[0]}: 0`;
+document.getElementById("player1").innerText =
+    `${data.players[0].nick}: 0`;
 
-  document.getElementById("player2").innerText =
-    `${data.players[1]}: 0`;
+document.getElementById("player2").innerText =
+    `${data.players[1].nick}: 0`;
 
   nextQuestion(data.question);
 });
