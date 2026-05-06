@@ -106,6 +106,19 @@ button:hover {
   margin: 15px auto;
 }
 
+.selectedAnswer {
+
+  background:
+    linear-gradient(
+      135deg,
+      #33bbff,
+      #77ddff
+    ) !important;
+
+  box-shadow:
+    0 0 20px #4dcfff;
+}
+
 #question {
 
   font-size: 38px;
@@ -113,6 +126,24 @@ button:hover {
   margin: 50px;
 
   color: #ffffff;
+}
+
+#questionNumber {
+
+  margin-top: 20px;
+
+  font-size: 26px;
+
+  color: #8fb6ff;
+}
+
+#waitingText {
+
+  margin-top: 20px;
+
+  font-size: 24px;
+
+  color: #7fdcff;
 }
 
 #result {
