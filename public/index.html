@@ -1,39 +1,66 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
+
   <meta charset="UTF-8">
-  <title>Миллиардер Онлайн</title>
 
-  <link rel="icon" href="Favicon.jpeg">
+  <title>Brain Rush Online</title>
 
-  <link rel="stylesheet" href="style.css">
+  <link
+    rel="icon"
+    href="Favicon.jpeg"
+  >
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+
 </head>
+
 <body>
 
 <div id="menu">
-  <h1>Миллиардер Онлайн</h1>
+
+  <h1>Brain Rush Online</h1>
 
   <p>
-    Проверь свои знания в онлайн викторине
+    Проверь свои знания
+    в онлайн викторине
   </p>
 
-  <input id="nick" placeholder="Введите ник">
+  <input
+    id="nick"
+    placeholder="Введите ник"
+  >
+
+  <br>
 
   <button onclick="findGame()">
     Найти соперника
   </button>
 
   <div id="status"></div>
+
 </div>
 
 <div id="game" style="display:none">
 
-  <div id="topBar">
-    <div id="player1"></div>
-    <div id="player2"></div>
-  </div>
+  <button
+    id="menuBtn"
+    onclick="goMenu()"
+  >
+    На главную
+  </button>
 
-  <div id="scores"></div>
+  <div id="topBar">
+
+    <div id="player1"></div>
+
+    <div id="player2"></div>
+
+  </div>
 
   <div id="question"></div>
 
@@ -41,13 +68,10 @@
 
   <div id="result"></div>
 
-  <button id="menuBtn" onclick="goMenu()">
-    На главную
-  </button>
-
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
+
 <script src="client.js"></script>
 
 </body>
