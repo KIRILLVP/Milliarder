@@ -26,8 +26,16 @@ const questions = [
     a: ["Python", "Java", "Lua", "C"],
     correct: 1
   },
-
-  // ДОБАВЬ ЕЩЁ ДО 20
+  {
+    q: "Самая большая планета?",
+    a: ["Марс", "Земля", "Юпитер", "Сатурн"],
+    correct: 2
+  },
+  {
+    q: "Создатель Windows?",
+    a: ["Apple", "Microsoft", "Google", "Sony"],
+    correct: 1
+  }
 ];
 
 let waitingPlayer = null;
@@ -57,6 +65,7 @@ io.on("connection", (socket) => {
         "room_" + socket.id + "_" + waitingPlayer.id;
 
       socket.join(room);
+
       waitingPlayer.join(room);
 
       const game = {
@@ -107,6 +116,7 @@ io.on("connection", (socket) => {
     game.answers[socket.id] = {
 
       answer: data.answer,
+
       time: data.time
     };
 
@@ -149,6 +159,7 @@ io.on("connection", (socket) => {
     }
 
     const result1 = calc(a1, a2, p1);
+
     const result2 = calc(a2, a1, p2);
 
     io.to(game.room).emit("result", {
@@ -178,14 +189,27 @@ io.on("connection", (socket) => {
 
         let winner = "draw";
 
-        if (p1.score > p2.score)
+        let winnerId = null;
+
+        if (p1.score > p2.score) {
+
           winner = p1.nick;
 
-        if (p2.score > p1.score)
+          winnerId = p1.id;
+        }
+
+        if (p2.score > p1.score) {
+
           winner = p2.nick;
 
+          winnerId = p2.id;
+        }
+
         io.to(game.room).emit("gameOver", {
-          winner
+
+          winner,
+
+          winnerId
         });
 
         delete games[game.room];
@@ -204,6 +228,7 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
 
     if (waitingPlayer === socket) {
+
       waitingPlayer = null;
     }
 
@@ -212,7 +237,9 @@ io.on("connection", (socket) => {
       const game = games[room];
 
       const playerInGame =
-        game.players.find(p => p.id === socket.id);
+        game.players.find(
+          p => p.id === socket.id
+        );
 
       if (playerInGame) {
 
@@ -225,5 +252,6 @@ io.on("connection", (socket) => {
 });
 
 server.listen(process.env.PORT || 3000, () => {
+
   console.log("server started");
 });
