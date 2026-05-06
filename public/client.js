@@ -1,35 +1,60 @@
 const socket = io();
 
 let currentRoom = null;
-let currentQuestion = null;
+
 let answered = false;
 
-const menuMusic = new Audio("MainMenu.mp3");
-menuMusic.loop = true;
-menuMusic.volume = 0.5;
+let thinkingMusic = null;
+
+const menuMusic =
+  new Audio("MainMenu.mp3");
+
+menuMusic.volume = 1.0;
 
 window.addEventListener("click", () => {
+
   menuMusic.play().catch(() => {});
+
 }, { once: true });
+
+function stopThinkingMusic() {
+
+  if (thinkingMusic) {
+
+    thinkingMusic.pause();
+
+    thinkingMusic.currentTime = 0;
+
+    thinkingMusic = null;
+  }
+}
 
 function findGame() {
 
-  const nick = document.getElementById("nick").value.trim();
+  const nick =
+    document.getElementById("nick")
+      .value
+      .trim();
 
   if (!nick) {
+
     alert("Введите ник");
+
     return;
   }
 
-  document.getElementById("status").innerText =
-    "Поиск соперника...";
+  document.getElementById("status")
+    .innerText =
+      "Поиск соперника...";
 
   socket.emit("findGame", nick);
 }
 
 socket.on("waiting", () => {
-  document.getElementById("status").innerText =
-    "Ожидание второго игрока...";
+
+  document.getElementById("status")
+    .innerText =
+      "Ожидание второго игрока...";
 });
 
 socket.on("startGame", (data) => {
@@ -38,14 +63,19 @@ socket.on("startGame", (data) => {
 
   currentRoom = data.room;
 
-  document.getElementById("menu").style.display = "none";
-  document.getElementById("game").style.display = "block";
+  document.getElementById("menu")
+    .style.display = "none";
 
-document.getElementById("player1").innerText =
-    `${data.players[0].nick}: 0`;
+  document.getElementById("game")
+    .style.display = "block";
 
-document.getElementById("player2").innerText =
-    `${data.players[1].nick}: 0`;
+  document.getElementById("player1")
+    .innerText =
+      `${data.players[0].nick}: 0`;
+
+  document.getElementById("player2")
+    .innerText =
+      `${data.players[1].nick}: 0`;
 
   nextQuestion(data.question);
 });
@@ -53,26 +83,38 @@ document.getElementById("player2").innerText =
 function nextQuestion(q) {
 
   answered = false;
-  currentQuestion = q;
 
-  document.getElementById("question").innerText = q.q;
+  stopThinkingMusic();
 
-  document.getElementById("answers").innerHTML = "";
+  document.getElementById("question")
+    .innerText = q.q;
 
-  document.getElementById("result").innerText = "";
+  document.getElementById("answers")
+    .innerHTML = "";
+
+  document.getElementById("result")
+    .innerHTML = "";
 
   setTimeout(() => {
 
-    const thinkingMusic =
+    const track =
       Math.random() > 0.5
-      ? new Audio("THINKING1.mp3")
-      : new Audio("THINKING2.mp3");
+      ? "THINKING1.mp3"
+      : "THINKING2.mp3";
 
-    thinkingMusic.play();
+    thinkingMusic = new Audio(track);
+
+    thinkingMusic.loop = true;
+
+    thinkingMusic.volume = 0.7;
+
+    thinkingMusic.play()
+      .catch(() => {});
 
     q.a.forEach((answer, index) => {
 
-      const btn = document.createElement("button");
+      const btn =
+        document.createElement("button");
 
       btn.className = "answerBtn";
 
@@ -85,16 +127,24 @@ function nextQuestion(q) {
         answered = true;
 
         socket.emit("answer", {
+
           room: currentRoom,
+
           answer: index,
+
           time: Date.now()
         });
 
-        document.querySelectorAll(".answerBtn")
-          .forEach(b => b.disabled = true);
+        document
+          .querySelectorAll(".answerBtn")
+          .forEach(b => {
+
+            b.disabled = true;
+          });
       };
 
-      document.getElementById("answers")
+      document
+        .getElementById("answers")
         .appendChild(btn);
     });
 
@@ -102,55 +152,103 @@ function nextQuestion(q) {
 }
 
 socket.on("question", (q) => {
+
   nextQuestion(q);
 });
 
 socket.on("result", (data) => {
 
-  const myResult = data.results[socket.id];
+  stopThinkingMusic();
+
+  const myResult =
+    data.results[socket.id];
 
   if (myResult.correct) {
+
     new Audio("RIGHT.mp3").play();
+
   } else {
+
     new Audio("WRONG.mp3").play();
   }
 
-  document.getElementById("player1").innerText =
-    `${data.players[0].nick}: ${data.players[0].score}`;
+  document.getElementById("player1")
+    .innerText =
+      `${data.players[0].nick}: ${data.players[0].score}`;
 
-  document.getElementById("player2").innerText =
-    `${data.players[1].nick}: ${data.players[1].score}`;
+  document.getElementById("player2")
+    .innerText =
+      `${data.players[1].nick}: ${data.players[1].score}`;
 
-  document.getElementById("result").innerHTML = `
-    Правильный ответ: ${data.correctAnswer}<br><br>
+  document.getElementById("result")
+    .innerHTML = `
 
-    Ваш ответ:
-    ${myResult.correct ? "Правильный" : "Неправильный"}<br>
+      Правильный ответ:
+      ${data.correctAnswer}
 
-    ${
-      myResult.faster
-      ? "Вы ответили быстрее"
-      : "Вы ответили позже"
-    }
-  `;
+      <br><br>
+
+      Ваш ответ:
+      ${
+        myResult.correct
+        ? "Правильный"
+        : "Неправильный"
+      }
+
+      <br>
+
+      ${
+        myResult.faster
+        ? "Вы ответили быстрее"
+        : "Вы ответили позже"
+      }
+    `;
 });
 
 socket.on("gameOver", (data) => {
 
-  let text = "";
+  stopThinkingMusic();
+
+  const myId = socket.id;
+
+  let endSound;
 
   if (data.winner === "draw") {
-    text = "Ничья!";
+
+    endSound =
+      new Audio("RIGHT.mp3");
+
+    alert("Ничья!");
+
+  } else if (
+    data.winnerId === myId
+  ) {
+
+    endSound =
+      new Audio("RIGHT.mp3");
+
+    alert("Вы победили!");
+
   } else {
-    text = `Победил ${data.winner}`;
+
+    endSound =
+      new Audio("WRONG.mp3");
+
+    alert("Вы проиграли!");
   }
 
-  alert(text);
+  endSound.play();
 
-  location.reload();
+  setTimeout(() => {
+
+    location.reload();
+
+  }, 4000);
 });
 
 socket.on("opponentLeft", () => {
+
+  stopThinkingMusic();
 
   alert("Соперник отключился");
 
@@ -158,5 +256,8 @@ socket.on("opponentLeft", () => {
 });
 
 function goMenu() {
+
+  stopThinkingMusic();
+
   location.reload();
 }
