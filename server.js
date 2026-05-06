@@ -68,6 +68,17 @@ io.on("connection", (socket) => {
 
       waitingPlayer.join(room);
 
+      const shuffledQuestions =
+        shuffle([...questions]);
+
+      shuffledQuestions.forEach((q, i) => {
+
+        q.number = i + 1;
+
+        q.total =
+          shuffledQuestions.length;
+      });
+
       const game = {
 
         room,
@@ -89,7 +100,7 @@ io.on("connection", (socket) => {
 
         answers: {},
 
-        questions: shuffle([...questions])
+        questions: shuffledQuestions
       };
 
       games[room] = game;
@@ -130,45 +141,68 @@ io.on("connection", (socket) => {
     const a2 = game.answers[p2.id];
 
     const correct =
-      game.questions[game.questionIndex].correct;
+      game.questions[game.questionIndex]
+        .correct;
 
-    function calc(answerData, otherData, player) {
+    function calc(
+      answerData,
+      otherData,
+      player
+    ) {
 
       const faster =
-        answerData.time < otherData.time;
+        answerData.time <
+        otherData.time;
 
       const correctAnswer =
         answerData.answer === correct;
 
+      let points = 0;
+
       if (faster && correctAnswer)
-        player.score += 2;
+        points = 2;
 
-      else if (faster && !correctAnswer)
-        player.score -= 2;
+      else if (
+        faster &&
+        !correctAnswer
+      )
+        points = -2;
 
-      else if (!faster && correctAnswer)
-        player.score += 1;
+      else if (
+        !faster &&
+        correctAnswer
+      )
+        points = 1;
 
       else
-        player.score -= 1;
+        points = -1;
+
+      player.score += points;
 
       return {
+
         faster,
-        correct: correctAnswer
+
+        correct: correctAnswer,
+
+        points
       };
     }
 
-    const result1 = calc(a1, a2, p1);
+    const result1 =
+      calc(a1, a2, p1);
 
-    const result2 = calc(a2, a1, p2);
+    const result2 =
+      calc(a2, a1, p2);
 
     io.to(game.room).emit("result", {
 
       players: game.players,
 
       correctAnswer:
-        game.questions[game.questionIndex]
-          .a[correct],
+        game.questions[
+          game.questionIndex
+        ].a[correct],
 
       results: {
         [p1.id]: result1,
@@ -205,12 +239,13 @@ io.on("connection", (socket) => {
           winnerId = p2.id;
         }
 
-        io.to(game.room).emit("gameOver", {
-
-          winner,
-
-          winnerId
-        });
+        io.to(game.room).emit(
+          "gameOver",
+          {
+            winner,
+            winnerId
+          }
+        );
 
         delete games[game.room];
 
@@ -218,7 +253,9 @@ io.on("connection", (socket) => {
 
         io.to(game.room).emit(
           "question",
-          game.questions[game.questionIndex]
+          game.questions[
+            game.questionIndex
+          ]
         );
       }
 
@@ -243,7 +280,9 @@ io.on("connection", (socket) => {
 
       if (playerInGame) {
 
-        io.to(room).emit("opponentLeft");
+        io.to(room).emit(
+          "opponentLeft"
+        );
 
         delete games[room];
       }
@@ -251,7 +290,10 @@ io.on("connection", (socket) => {
   });
 });
 
-server.listen(process.env.PORT || 3000, () => {
+server.listen(
+  process.env.PORT || 3000,
+  () => {
 
-  console.log("server started");
-});
+    console.log("server started");
+  }
+);
