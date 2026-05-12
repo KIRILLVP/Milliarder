@@ -18,6 +18,8 @@ body {
   font-family: Arial;
 
   text-align: center;
+
+  overflow-x: hidden;
 }
 
 #menu,
@@ -126,6 +128,8 @@ button:hover {
   margin: 50px;
 
   color: #ffffff;
+
+  min-height: 90px;
 }
 
 #questionNumber {
@@ -184,4 +188,74 @@ button:hover {
   font-size: 20px;
 
   color: #c5b3ff;
+}
+
+#hostBox {
+
+  position: fixed;
+
+  left: 20px;
+
+  bottom: 20px;
+
+  display: none;
+
+  align-items: flex-end;
+
+  gap: 15px;
+}
+
+#hostImage {
+
+  width: 120px;
+
+  height: 120px;
+
+  border-radius: 16px;
+
+  border: 3px solid #7a8fff;
+
+  object-fit: cover;
+}
+
+#hostTextBox {
+
+  width: 450px;
+
+  min-height: 120px;
+
+  background: rgba(10,10,30,0.95);
+
+  border: 3px solid #6d7cff;
+
+  border-radius: 18px;
+
+  padding: 15px;
+
+  text-align: left;
+}
+
+#hostTitle {
+
+  color: #7fc4ff;
+
+  font-size: 22px;
+
+  margin-bottom: 10px;
+}
+
+#hostText {
+
+  font-size: 21px;
+
+  color: white;
+
+  line-height: 1.5;
+}
+
+.categoryText {
+
+  color: #89c7ff;
+
+  font-weight: bold;
 }
