@@ -204,18 +204,20 @@ button:hover {
 
   align-items: flex-end;
 
-  gap: 22px;
+  gap: 18px;
 
   z-index: 999;
+
+  transition: 0.5s;
 }
 
 #hostImage {
 
-  width: 180px;
+  width: 160px;
 
-  height: 180px;
+  height: 160px;
 
-  border-radius: 22px;
+  border-radius: 20px;
 
   border: 4px solid #7a8fff;
 
@@ -227,9 +229,9 @@ button:hover {
 
 #hostTextBox {
 
-  width: 680px;
+  width: 580px;
 
-  min-height: 180px;
+  min-height: 150px;
 
   background: rgba(10,10,30,0.97);
 
@@ -237,7 +239,7 @@ button:hover {
 
   border-radius: 24px;
 
-  padding: 22px;
+  padding: 20px;
 
   text-align: left;
 
@@ -249,33 +251,41 @@ button:hover {
 
   color: #7fc4ff;
 
-  font-size: 34px;
+  font-size: 30px;
 
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 
   font-weight: bold;
 }
 
 #hostText {
 
-  font-size: 31px;
+  font-size: 27px;
 
   color: white;
 
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .hostCorner {
 
   left: auto !important;
 
-  top: 20px !important;
+  top: 15px !important;
 
-  right: 20px !important;
-
-  bottom: auto !important;
+  right: 15px !important;
 
   transform: none !important;
+}
 
-  scale: 0.7;
+.hostCorner #hostImage {
+
+  width: 95px;
+
+  height: 95px;
+}
+
+.hostCorner #hostTextBox {
+
+  display: none;
 }
