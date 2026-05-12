@@ -269,6 +269,16 @@ socket.on("result", (data) => {
     .innerText =
       `${data.players[1].nick}: ${data.players[1].score}`;
 
+  let speedText = "";
+
+  if (myResult.correct) {
+
+    speedText =
+      myResult.faster
+      ? "Вы ответили быстрее"
+      : "Вы ответили позже";
+  }
+
   document.getElementById("result")
     .innerHTML = `
 
@@ -283,12 +293,13 @@ socket.on("result", (data) => {
         : "Ответ неправильный"
       }
 
-      <br>
-
       ${
-        myResult.faster
-        ? "Вы ответили быстрее"
-        : "Вы ответили позже"
+        myResult.correct
+        ? `
+          <br>
+          ${speedText}
+        `
+        : ""
       }
 
       <br><br>
