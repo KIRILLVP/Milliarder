@@ -6,8 +6,6 @@ let answered = false;
 
 let thinkingMusic = null;
 
-let selectedButton = null;
-
 const menuMusic =
   new Audio("MainMenu.mp3");
 
@@ -19,6 +17,26 @@ window.addEventListener("click", () => {
 
 }, { once: true });
 
+function typeText(element, text, speed = 30) {
+
+  element.innerHTML = "";
+
+  let i = 0;
+
+  const interval = setInterval(() => {
+
+    element.innerHTML += text[i];
+
+    i++;
+
+    if (i >= text.length) {
+
+      clearInterval(interval);
+    }
+
+  }, speed);
+}
+
 function stopThinkingMusic() {
 
   if (thinkingMusic) {
@@ -29,11 +47,6 @@ function stopThinkingMusic() {
 
     thinkingMusic = null;
   }
-}
-
-function shuffle(array) {
-
-  return array.sort(() => Math.random() - 0.5);
 }
 
 function findGame() {
@@ -76,6 +89,9 @@ socket.on("startGame", (data) => {
   document.getElementById("game")
     .style.display = "block";
 
+  document.getElementById("hostBox")
+    .style.display = "flex";
+
   document.getElementById("player1")
     .innerText =
       `${data.players[0].nick}: 0`;
@@ -84,23 +100,33 @@ socket.on("startGame", (data) => {
     .innerText =
       `${data.players[1].nick}: 0`;
 
-  nextQuestion(data.question);
+  const hostText =
+`Приветствую вас, уважаемые игроки! Вам попалась категория ${data.category}. Вам предстоит ответить на 10 вопросов! Желаю удачи!`;
+
+  typeText(
+    document.getElementById("hostText"),
+    hostText,
+    35
+  );
+
+  setTimeout(() => {
+
+    document.getElementById("hostBox")
+      .style.display = "none";
+
+    nextQuestion(data.question);
+
+  }, 10000);
 });
 
 function nextQuestion(q) {
 
   answered = false;
 
-  selectedButton = null;
-
   stopThinkingMusic();
 
   document.getElementById("question")
-    .innerText = q.q;
-
-  document.getElementById("questionNumber")
-    .innerText =
-      `Вопрос ${q.number} / ${q.total}`;
+    .innerHTML = "";
 
   document.getElementById("answers")
     .innerHTML = "";
@@ -111,12 +137,29 @@ function nextQuestion(q) {
   document.getElementById("waitingText")
     .innerHTML = "";
 
+  document.getElementById("questionNumber")
+    .innerText =
+      `Вопрос ${q.number} / ${q.total}`;
+
+  typeText(
+    document.getElementById("question"),
+    q.q,
+    25
+  );
+
   setTimeout(() => {
 
+    const tracks = [
+      "THINKING1.mp3",
+      "THINKING2.mp3"
+    ];
+
     const track =
-      Math.random() > 0.5
-      ? "THINKING1.mp3"
-      : "THINKING2.mp3";
+      tracks[
+        Math.floor(
+          Math.random() * tracks.length
+        )
+      ];
 
     thinkingMusic = new Audio(track);
 
@@ -124,17 +167,12 @@ function nextQuestion(q) {
 
     thinkingMusic.volume = 0.7;
 
-    thinkingMusic.play()
-      .catch(() => {
-
-        console.log(
-          "Ошибка воспроизведения:",
-          track
-        );
-      });
+    thinkingMusic.play();
 
     const answers =
-      shuffle([...q.a]);
+      [...q.a].sort(() =>
+        Math.random() - 0.5
+      );
 
     answers.forEach((answer) => {
 
@@ -151,18 +189,15 @@ function nextQuestion(q) {
 
         answered = true;
 
-        selectedButton = btn;
-
-        btn.classList.add("selectedAnswer");
+        btn.classList.add(
+          "selectedAnswer"
+        );
 
         document
           .querySelectorAll(".answerBtn")
           .forEach(b => {
 
-            if (b !== btn) {
-
-              b.disabled = true;
-            }
+            b.disabled = true;
           });
 
         document
@@ -186,7 +221,7 @@ function nextQuestion(q) {
         .appendChild(btn);
     });
 
-  }, 3000);
+  }, 5000);
 }
 
 socket.on("question", (q) => {
@@ -222,19 +257,6 @@ socket.on("result", (data) => {
     .innerText =
       `${data.players[1].nick}: ${data.players[1].score}`;
 
-  let pointsText = "";
-
-  if (myResult.points > 0) {
-
-    pointsText =
-      `+${myResult.points} очков`;
-
-  } else {
-
-    pointsText =
-      `${myResult.points} очков`;
-  }
-
   document.getElementById("result")
     .innerHTML = `
 
@@ -243,11 +265,10 @@ socket.on("result", (data) => {
 
       <br><br>
 
-      Ваш ответ:
       ${
         myResult.correct
-        ? "Правильный"
-        : "Неправильный"
+        ? "Ответ правильный"
+        : "Ответ неправильный"
       }
 
       <br>
@@ -260,14 +281,17 @@ socket.on("result", (data) => {
 
       <br><br>
 
-      Получено:
-      ${pointsText}
+      Получено очков:
+      ${myResult.points}
     `;
 });
 
 socket.on("gameOver", (data) => {
 
   stopThinkingMusic();
+
+  document.getElementById("hostBox")
+    .style.display = "none";
 
   const myId = socket.id;
 
