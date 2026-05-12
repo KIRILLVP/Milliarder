@@ -23,6 +23,28 @@ const categories = {
         "Рузвельт"
       ],
       correct: 0
+    },
+
+    {
+      q: "В каком году началась Вторая мировая война?",
+      a: [
+        "1939",
+        "1941",
+        "1914",
+        "1922"
+      ],
+      correct: 0
+    },
+
+    {
+      q: "Кто построил пирамиды?",
+      a: [
+        "Римляне",
+        "Египтяне",
+        "Греки",
+        "Викинги"
+      ],
+      correct: 1
     }
 
   ],
@@ -38,6 +60,28 @@ const categories = {
         "Nintendo"
       ],
       correct: 1
+    },
+
+    {
+      q: "Кто создал Minecraft?",
+      a: [
+        "Notch",
+        "Valve",
+        "Rockstar",
+        "EA"
+      ],
+      correct: 0
+    },
+
+    {
+      q: "Какой движок использует C#?",
+      a: [
+        "Unity",
+        "Godot",
+        "CryEngine",
+        "Source"
+      ],
+      correct: 0
     }
 
   ],
@@ -53,6 +97,28 @@ const categories = {
         "Дэвид Боуи"
       ],
       correct: 0
+    },
+
+    {
+      q: "Кто написал музыку DOOM 2016?",
+      a: [
+        "Мик Гордон",
+        "Ханс Циммер",
+        "Кирилл",
+        "Metallica"
+      ],
+      correct: 0
+    },
+
+    {
+      q: "Какой жанр у Metallica?",
+      a: [
+        "Рэп",
+        "Джаз",
+        "Метал",
+        "Техно"
+      ],
+      correct: 2
     }
 
   ]
@@ -64,7 +130,9 @@ const games = {};
 
 function shuffle(array) {
 
-  return array.sort(() => Math.random() - 0.5);
+  return array.sort(() =>
+    Math.random() - 0.5
+  );
 }
 
 io.on("connection", (socket) => {
@@ -82,14 +150,30 @@ io.on("connection", (socket) => {
     } else {
 
       const room =
-        "room_" + socket.id + "_" + waitingPlayer.id;
+        "room_" +
+        socket.id +
+        "_" +
+        waitingPlayer.id;
 
       socket.join(room);
 
       waitingPlayer.join(room);
 
+      const categoryNames =
+        Object.keys(categories);
+
+      const randomCategory =
+        categoryNames[
+          Math.floor(
+            Math.random() *
+            categoryNames.length
+          )
+        ];
+
       const shuffledQuestions =
-        shuffle([...questions]);
+        shuffle(
+          [...categories[randomCategory]]
+        ).slice(0, 10);
 
       shuffledQuestions.forEach((q, i) => {
 
@@ -102,6 +186,8 @@ io.on("connection", (socket) => {
       const game = {
 
         room,
+
+        category: randomCategory,
 
         players: [
           {
@@ -131,6 +217,8 @@ io.on("connection", (socket) => {
 
         players: game.players,
 
+        category: randomCategory,
+
         question: game.questions[0]
       });
 
@@ -140,7 +228,8 @@ io.on("connection", (socket) => {
 
   socket.on("answer", (data) => {
 
-    const game = games[data.room];
+    const game =
+      games[data.room];
 
     if (!game) return;
 
@@ -151,18 +240,27 @@ io.on("connection", (socket) => {
       time: data.time
     };
 
-    if (Object.keys(game.answers).length < 2)
-      return;
+    if (
+      Object.keys(game.answers)
+        .length < 2
+    ) return;
 
-    const p1 = game.players[0];
-    const p2 = game.players[1];
+    const p1 =
+      game.players[0];
 
-    const a1 = game.answers[p1.id];
-    const a2 = game.answers[p2.id];
+    const p2 =
+      game.players[1];
+
+    const a1 =
+      game.answers[p1.id];
+
+    const a2 =
+      game.answers[p2.id];
 
     const correct =
-      game.questions[game.questionIndex]
-        .correct;
+      game.questions[
+        game.questionIndex
+      ].correct;
 
     function calc(
       answerData,
@@ -175,27 +273,24 @@ io.on("connection", (socket) => {
         otherData.time;
 
       const correctAnswer =
-        answerData.answer === correct;
+        answerData.answer ===
+        correct;
 
       let points = 0;
 
-      if (faster && correctAnswer)
-        points = 2;
+      if (
+        correctAnswer &&
+        faster
+      ) {
 
-      else if (
-        faster &&
-        !correctAnswer
-      )
-        points = -2;
+        points = 1.5;
 
-      else if (
-        !faster &&
+      } else if (
         correctAnswer
-      )
-        points = 1;
+      ) {
 
-      else
-        points = -1;
+        points = 1;
+      }
 
       player.score += points;
 
@@ -215,20 +310,23 @@ io.on("connection", (socket) => {
     const result2 =
       calc(a2, a1, p2);
 
-    io.to(game.room).emit("result", {
+    io.to(game.room).emit(
+      "result",
+      {
 
-      players: game.players,
+        players: game.players,
 
-      correctAnswer:
-        game.questions[
-          game.questionIndex
-        ].a[correct],
+        correctAnswer:
+          game.questions[
+            game.questionIndex
+          ].a[correct],
 
-      results: {
-        [p1.id]: result1,
-        [p2.id]: result2
+        results: {
+          [p1.id]: result1,
+          [p2.id]: result2
+        }
       }
-    });
+    );
 
     game.answers = {};
 
@@ -245,18 +343,28 @@ io.on("connection", (socket) => {
 
         let winnerId = null;
 
-        if (p1.score > p2.score) {
+        if (
+          p1.score >
+          p2.score
+        ) {
 
-          winner = p1.nick;
+          winner =
+            p1.nick;
 
-          winnerId = p1.id;
+          winnerId =
+            p1.id;
         }
 
-        if (p2.score > p1.score) {
+        if (
+          p2.score >
+          p1.score
+        ) {
 
-          winner = p2.nick;
+          winner =
+            p2.nick;
 
-          winnerId = p2.id;
+          winnerId =
+            p2.id;
         }
 
         io.to(game.room).emit(
@@ -284,18 +392,24 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
 
-    if (waitingPlayer === socket) {
+    if (
+      waitingPlayer === socket
+    ) {
 
       waitingPlayer = null;
     }
 
-    for (const room in games) {
+    for (
+      const room in games
+    ) {
 
-      const game = games[room];
+      const game =
+        games[room];
 
       const playerInGame =
         game.players.find(
-          p => p.id === socket.id
+          p =>
+            p.id === socket.id
         );
 
       if (playerInGame) {
@@ -314,6 +428,8 @@ server.listen(
   process.env.PORT || 3000,
   () => {
 
-    console.log("server started");
+    console.log(
+      "server started"
+    );
   }
 );
