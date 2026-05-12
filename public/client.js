@@ -100,8 +100,19 @@ socket.on("startGame", (data) => {
     .innerText =
       `${data.players[1].nick}: 0`;
 
+  let categoryName = "";
+
+  if (data.category === "music")
+    categoryName = "МУЗЫКА";
+
+  if (data.category === "history")
+    categoryName = "ИСТОРИЯ";
+
+  if (data.category === "games")
+    categoryName = "ИГРЫ";
+
   const hostText =
-`Приветствую вас, уважаемые игроки! Вам попалась категория ${data.category}. Вам предстоит ответить на 10 вопросов! Желаю удачи!`;
+`Приветствую вас, уважаемые игроки! Вам попалась категория ${categoryName}. Вам предстоит ответить на 10 вопросов! Желаю удачи!`;
 
   typeText(
     document.getElementById("hostText"),
@@ -111,8 +122,9 @@ socket.on("startGame", (data) => {
 
   setTimeout(() => {
 
-    document.getElementById("hostBox")
-      .style.display = "none";
+    document
+      .getElementById("hostBox")
+      .classList.add("hostCorner");
 
     nextQuestion(data.question);
 
